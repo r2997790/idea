@@ -60,7 +60,7 @@ async function main() {
         const createFileResponse = await fetch(`https://www.googleapis.com/drive/v3/files`, {
           method: 'POST',
           headers: {
-            Authorization: 'AIzaSyD8Ic03HrQku5sXbI9-9l558NJ9ch-lLeM', // Replace with your API key
+            Authorization: 'AIzaSyAygwy0sAezmPiuRlnfcNRSSDfYG6JQg1Y', // Replace with your API key
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
