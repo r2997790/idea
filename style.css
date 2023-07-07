@@ -56,4 +56,38 @@ body {
   button:active {
     background-color: #1c4da3;
   }
+
+  #rotateMessage {
+    display: none;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  @media screen and (orientation: portrait) {
+    #rotateMessage {
+      display: block;
+    }
+  
+    #videoLive,
+    #videoRecorded {
+      display: none;
+    }
+  }
+  
+  @media screen and (orientation: landscape) {
+    #rotateMessage {
+      display: none;
+    }
+  
+    #videoLive,
+    #videoRecorded {
+      display: block;
+      max-width: 480px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+  }
+  
   

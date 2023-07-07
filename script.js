@@ -49,19 +49,42 @@ async function main() {
       }
     }
   
-    function saveVideo() {
-      const timestamp = new Date().toISOString();
-      const filename = `video_${timestamp}.webm`;
-      const blob = new Blob(mediaRecorder.recordedBlobs, { type: 'video/webm' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
+    async function saveVideo() {
+        const timestamp = new Date().toISOString();
+        const filename = `video_${timestamp}.webm`;
+        const blob = new Blob(mediaRecorder.recordedBlobs, { type: 'video/webm' });
+        const file = new File([blob], filename, { type: 'video/webm' });
+      
+        const folderId = '1nZcp0nIWpZJgHrCksGvu-MBBoUWeKzi5'; // Replace with your folder ID
+      
+        const createFileResponse = await fetch(`https://www.googleapis.com/drive/v3/files`, {
+          method: 'POST',
+          headers: {
+            Authorization: 'AIzaSyD8Ic03HrQku5sXbI9-9l558NJ9ch-lLeM', // Replace with your API key
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: filename,
+            parents: [folderId],
+          }),
+        });
+      
+        const createFileData = await createFileResponse.json();
+      
+        const fileId = createFileData.id;
+        const uploadUrl = createFileData.uploadUrl;
+      
+        const formData = new FormData();
+        formData.append('file', file);
+      
+        await fetch(uploadUrl, {
+          method: 'POST',
+          body: formData,
+        });
+      
+        console.log('Video saved to Google Drive!');
+      }
+      
   
     buttonStart.addEventListener('click', () => {
       if (!isRecording) {
