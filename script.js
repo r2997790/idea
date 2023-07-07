@@ -50,41 +50,53 @@ async function main() {
     }
   
     async function saveVideo() {
-        const timestamp = new Date().toISOString();
-        const filename = `video_${timestamp}.webm`;
-        const blob = new Blob(mediaRecorder.recordedBlobs, { type: 'video/webm' });
-        const file = new File([blob], filename, { type: 'video/webm' });
-      
-        const folderId = '1nZcp0nIWpZJgHrCksGvu-MBBoUWeKzi5'; // Replace with your folder ID
-      
-        const createFileResponse = await fetch(`https://www.googleapis.com/drive/v3/files`, {
-          method: 'POST',
-          headers: {
-            Authorization: 'AIzaSyAygwy0sAezmPiuRlnfcNRSSDfYG6JQg1Y', // Replace with your API key
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: filename,
-            parents: [folderId],
-          }),
-        });
-      
-        const createFileData = await createFileResponse.json();
-      
-        const fileId = createFileData.id;
-        const uploadUrl = createFileData.uploadUrl;
-      
-        const formData = new FormData();
-        formData.append('file', file);
-      
-        await fetch(uploadUrl, {
-          method: 'POST',
-          body: formData,
-        });
-      
-        console.log('Video saved to Google Drive!');
+      if (!recordedChunks.length) {
+        console.warn('No recorded video available.');
+        return;
       }
-      
+  
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      const file = new File([blob], 'recorded_video.webm');
+  
+      // Load the Google Drive API
+      gapi.load('client:auth2', async () => {
+        try {
+          // Initialize the Google Drive client
+          await gapi.client.init({
+            apiKey: 'AIzaSyDOqkBSqGlFLFlEUv7HimbMmbPXjJT8pNI', // Replace with your actual API key
+            clientId: ' 240950174286-njie8elgggvsb9bdoroc1gsu4p6jk9r9.apps.googleusercontent.com', // Replace with your actual client ID
+            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+            scope: 'https://www.googleapis.com/auth/drive.file',
+          });
+  
+          // Check if the user is signed in
+          if (!gapi.auth2.getAuthInstance().isSignedIn.get()) {
+            // Sign in the user
+            await gapi.auth2.getAuthInstance().signIn();
+          }
+  
+          // Create the file metadata
+          const fileMetadata = {
+            name: file.name,
+            parents: ['1nZcp0nIWpZJgHrCksGvu-MBBoUWeKzi5'], // Replace 'FOLDER_ID' with your desired folder ID
+          };
+  
+          // Upload the file to Google Drive
+          const response = await gapi.client.drive.files.create({
+            resource: fileMetadata,
+            media: {
+              mimeType: file.type,
+              body: file,
+            },
+            fields: 'id',
+          });
+  
+          console.log('Video saved to Google Drive with file ID:', response.result.id);
+        } catch (error) {
+          console.error('Error saving video to Google Drive:', error);
+        }
+      });
+    }
   
     buttonStart.addEventListener('click', () => {
       if (!isRecording) {
